@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Courses – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Course Catalog Management</h2>
+        <p class="text-muted mb-0">Create, update, monitor capacity, and manage all academic course listings.</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a href="{{ url_for('add_course') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add New Course
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="app-card p-3 mb-4">
+    <form method="GET" action="{{ url_for('manage_courses') }}" class="row g-3">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control" name="search" id="clientTableSearch"
+                       placeholder="Filter by course code or title..." value="{{ search }}">
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <select class="form-select" name="department" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for d in departments %}
+                    <option value="{{ d }}" {% if dept == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex">
+            <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-secondary w-100" title="Reset Filters">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Courses Table Card -->
+<div class="app-card shadow-sm">
+    <div class="card-header-clean">
+        <span class="fw-semibold">All Courses List</span>
+        <span class="badge bg-light text-dark border">{{ courses|length }} Total Courses</span>
+    </div>
+
+    {% if courses %}
+        <!-- Desktop Table View (>= 768px) -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-custom table-hover searchable-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Course Title</th>
+                        <th>Department</th>
+                        <th>Sem</th>
+                        <th>Credits</th>
+                        <th>Faculty</th>
+                        <th>Capacity</th>
+                        <th>Schedule</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                        <tr>
+                            <td><span class="fw-bold text-primary">{{ course.course_code }}</span></td>
+                            <td class="fw-semibold text-dark">{{ course.course_name }}</td>
+                            <td><span class="badge badge-custom badge-dept">{{ course.department }}</span></td>
+                            <td>Sem {{ course.semester }}</td>
+                            <td><span class="badge badge-custom badge-credits">{{ course.credits }} Cr</span></td>
+                            <td class="small"><i class="bi bi-person text-muted me-1"></i>{{ course.faculty }}</td>
+                            <td>
+                                {% if course.available_seats > 0 %}
+                                    <span class="badge badge-custom badge-available">
+                                        {{ course.available_seats }} / {{ course.max_seats }} Left
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-custom badge-full">
+                                        0 / {{ course.max_seats }} Full
+                                    </span>
+                                {% endif %}
+                                <div class="text-muted" style="font-size: 0.7rem;">({{ course.reg_count }} enrolled)</div>
+                            </td>
+                            <td class="small text-muted"><i class="bi bi-clock me-1"></i>{{ course.schedule }}</td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-outline-primary btn-sm" title="Edit Course">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('delete_course', course_id=course.id) }}" 
+                                          onsubmit="return confirmDeleteCourse('{{ course.course_code }}');" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Course">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Phone Card View (< 768px) -->
+        <div class="d-md-none p-2">
+            {% for course in courses %}
+                <div class="app-card p-3 mb-2 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary-subtle text-primary fw-bold fs-6">{{ course.course_code }}</span>
+                        <span class="badge badge-custom badge-credits">{{ course.credits }} Credits</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">{{ course.course_name }}</h6>
+                    <div class="mb-2 d-flex flex-wrap gap-1">
+                        <span class="badge badge-custom badge-dept">{{ course.department }}</span>
+                        <span class="badge badge-custom badge-sem">Sem {{ course.semester }}</span>
+                    </div>
+                    <div class="small text-muted mb-1"><i class="bi bi-person text-secondary me-1"></i>{{ course.faculty }}</div>
+                    <div class="small text-muted mb-2"><i class="bi bi-clock text-primary me-1"></i>{{ course.schedule }}</div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top mb-3">
+                        <span class="small text-muted">Availability:</span>
+                        {% if course.available_seats > 0 %}
+                            <span class="badge badge-custom badge-available">{{ course.available_seats }} / {{ course.max_seats }} Left</span>
+                        {% else %}
+                            <span class="badge badge-custom badge-full">Full</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1 py-2">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                        <form method="POST" action="{{ url_for('delete_course', course_id=course.id) }}" 
+                              onsubmit="return confirmDeleteCourse('{{ course.course_code }}');" class="flex-grow-1">
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-2">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="p-5 text-center">
+            <h5 class="fw-bold text-dark">No Courses Found</h5>
+            <p class="text-muted small">No courses exist in the system matching your criteria.</p>
+            <a href="{{ url_for('add_course') }}" class="btn btn-primary btn-sm">Add First Course</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

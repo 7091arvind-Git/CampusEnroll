@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}My Courses – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 mb-md-4 pb-2 border-bottom">
+    <div class="mb-2 mb-md-0">
+        <h2 class="fw-bold text-dark mb-1 fs-3 fs-md-2">My Enrolled Courses</h2>
+        <p class="text-muted mb-0 small">Review and manage your registered courses for the current semester.</p>
+    </div>
+    <div class="d-flex flex-column flex-sm-row gap-2">
+        <a href="{{ url_for('browse_courses') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add More Courses
+        </a>
+        <a href="{{ url_for('timetable') }}" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-calendar3 me-1"></i> View Timetable
+        </a>
+    </div>
+</div>
+
+<!-- Summary Banner (3 Cards) -->
+<div class="row g-2 g-md-3 mb-4">
+    <div class="col-4 col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-indigo d-none d-sm-flex">
+                <i class="bi bi-journal-bookmark"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ registered_courses|length }}</div>
+                <div class="stat-label">Enrolled</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4 col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-purple d-none d-sm-flex">
+                <i class="bi bi-award"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_credits }} <span class="fs-6 text-muted fw-normal d-none d-md-inline">/ {{ MAX_CREDIT_LIMIT }}</span></div>
+                <div class="stat-label">Credits</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4 col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green d-none d-sm-flex">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ remaining_credits }}</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Courses Container -->
+<div class="app-card shadow-sm">
+    <div class="card-header-clean">
+        <span class="fw-semibold">Enrolled Course List</span>
+        <span class="badge bg-light text-dark border">{{ registered_courses|length }} Active</span>
+    </div>
+
+    {% if registered_courses %}
+        <!-- Desktop Table View (>= 768px) -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-custom table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Course Title</th>
+                        <th>Department</th>
+                        <th>Credits</th>
+                        <th>Faculty</th>
+                        <th>Schedule</th>
+                        <th>Registered On</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in registered_courses %}
+                        <tr>
+                            <td><span class="fw-bold text-primary">{{ course.course_code }}</span></td>
+                            <td class="fw-semibold text-dark">{{ course.course_name }}</td>
+                            <td><span class="badge badge-custom badge-dept">{{ course.department }}</span></td>
+                            <td><span class="badge badge-custom badge-credits">{{ course.credits }} Credits</span></td>
+                            <td><i class="bi bi-person text-muted me-1"></i>{{ course.faculty }}</td>
+                            <td class="small text-muted"><i class="bi bi-clock me-1"></i>{{ course.schedule }}</td>
+                            <td class="small text-muted">{{ course.registration_date }}</td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ url_for('drop_course', course_id=course.id) }}" 
+                                      onsubmit="return confirmDropCourse('{{ course.course_code }}');" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm px-3" title="Drop Course">
+                                        <i class="bi bi-trash3 me-1"></i> Drop Course
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Phone Card View (< 768px) -->
+        <div class="d-md-none p-2">
+            {% for course in registered_courses %}
+                <div class="app-card p-3 mb-2 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary-subtle text-primary fw-bold fs-6">{{ course.course_code }}</span>
+                        <span class="badge badge-custom badge-credits">{{ course.credits }} Credits</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">{{ course.course_name }}</h6>
+                    <div class="mb-2">
+                        <span class="badge badge-custom badge-dept">{{ course.department }}</span>
+                    </div>
+                    <div class="small text-muted mb-1">
+                        <i class="bi bi-person text-secondary me-1"></i>{{ course.faculty }}
+                    </div>
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-clock text-primary me-1"></i>{{ course.schedule }}
+                    </div>
+                    <form method="POST" action="{{ url_for('drop_course', course_id=course.id) }}" onsubmit="return confirmDropCourse('{{ course.course_code }}');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-2 fw-semibold">
+                            <i class="bi bi-trash3 me-1"></i> Drop Course
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="p-3 bg-light border-top d-flex flex-column flex-sm-row justify-content-between align-items-sm-center small text-muted gap-2">
+            <span><i class="bi bi-info-circle me-1"></i>Dropping a course immediately restores its seat.</span>
+            <span>Total Enrolled: <strong>{{ total_credits }} credits</strong></span>
+        </div>
+    {% else %}
+        <div class="p-4 p-md-5 text-center">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-inbox display-4"></i>
+            </div>
+            <h4 class="fw-bold text-dark">No Enrolled Courses Found</h4>
+            <p class="text-muted small mb-4">You have not registered for any courses yet. Browse available courses to enroll.</p>
+            <a href="{{ url_for('browse_courses') }}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-search me-1"></i> Browse Course Catalog
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

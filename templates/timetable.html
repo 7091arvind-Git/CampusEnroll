@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Weekly Timetable – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 mb-md-4 pb-2 border-bottom">
+    <div class="mb-2 mb-md-0">
+        <h2 class="fw-bold text-dark mb-1 fs-3 fs-md-2">Weekly Class Timetable</h2>
+        <p class="text-muted mb-0 small">Personalized class routine auto-generated from your active course enrollments.</p>
+    </div>
+    <div class="d-flex flex-column flex-sm-row gap-2">
+        <a href="{{ url_for('browse_courses') }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add Courses
+        </a>
+        <a href="{{ url_for('my_courses') }}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-journal-check me-1"></i> Manage Courses
+        </a>
+    </div>
+</div>
+
+{% if courses_count == 0 %}
+    <div class="app-card p-4 p-md-5 text-center shadow-sm">
+        <div class="mb-3 text-muted">
+            <i class="bi bi-calendar-x display-4 text-warning"></i>
+        </div>
+        <h4 class="fw-bold text-dark">No Scheduled Classes</h4>
+        <p class="text-muted mb-4 small">You have not registered for any courses yet. Once registered, your weekly routine will appear here.</p>
+        <a href="{{ url_for('browse_courses') }}" class="btn btn-primary px-4 py-2">
+            <i class="bi bi-book me-1"></i> Browse &amp; Register Courses
+        </a>
+    </div>
+{% else %}
+    <!-- Mobile Weekday Selector (Visible on Mobile Phones & Tablets < 992px) -->
+    <div class="d-lg-none mb-3">
+        <div class="d-flex overflow-auto gap-2 pb-2" style="scrollbar-width: none;">
+            <button type="button" class="btn btn-sm btn-primary active timetable-filter-btn" data-day="all">All Days</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary timetable-filter-btn" data-day="Monday">Mon</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary timetable-filter-btn" data-day="Tuesday">Tue</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary timetable-filter-btn" data-day="Wednesday">Wed</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary timetable-filter-btn" data-day="Thursday">Thu</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary timetable-filter-btn" data-day="Friday">Fri</button>
+        </div>
+    </div>
+
+    <!-- Weekly Columns Grid -->
+    <div class="row g-2 g-md-3" id="timetableGrid">
+        {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+        {% for day in days %}
+            <div class="col-12 col-lg timetable-day-col" data-day="{{ day }}">
+                <div class="app-card h-100 shadow-sm border">
+                    <div class="timetable-day-header">
+                        <i class="bi bi-calendar-day me-1"></i> {{ day }}
+                    </div>
+                    <div class="p-2 p-md-3 bg-light h-100">
+                        {% if weekly_schedule[day] %}
+                            {% for item in weekly_schedule[day] %}
+                                <div class="timetable-card">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-primary-subtle text-primary fw-bold">{{ item.code }}</span>
+                                        <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">{{ item.credits }} Cr</span>
+                                    </div>
+                                    <div class="fw-semibold text-dark small mb-1">{{ item.name }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        <i class="bi bi-person text-secondary me-1"></i>{{ item.faculty }}
+                                    </div>
+                                    <div class="text-primary mt-2 small fw-medium">
+                                        <i class="bi bi-clock me-1"></i>{{ item.time }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-3 py-md-4 text-muted small">
+                                <i class="bi bi-cup-hot display-6 text-secondary opacity-50 d-block mb-1"></i>
+                                <span>No classes scheduled</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Timetable Notes Card -->
+    <div class="app-card p-3 mt-4 bg-white border">
+        <div class="d-flex align-items-center gap-2 text-muted small">
+            <i class="bi bi-info-circle-fill text-primary fs-5 flex-shrink-0"></i>
+            <span>
+                Timetable automatically synchronizes with your active course registrations. Adding or dropping a course updates this routine immediately.
+            </span>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mobile Timetable Day Filter
+document.addEventListener('DOMContentLoaded', function () {
+    const filterButtons = document.querySelectorAll('.timetable-filter-btn');
+    const dayColumns = document.querySelectorAll('.timetable-day-col');
+
+    filterButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            filterButtons.forEach(btn => {
+                btn.classList.remove('btn-primary', 'active');
+                btn.classList.add('btn-outline-secondary');
+            });
+            this.classList.remove('btn-outline-secondary');
+            this.classList.add('btn-primary', 'active');
+
+            const selectedDay = this.getAttribute('data-day');
+
+            dayColumns.forEach(function (col) {
+                if (selectedDay === 'all' || col.getAttribute('data-day') === selectedDay) {
+                    col.style.display = '';
+                } else {
+                    col.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

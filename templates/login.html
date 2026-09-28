@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Portal Login – CampusEnroll{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2 py-md-4">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+        <div class="app-card shadow-sm border">
+            <div class="p-3 p-sm-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="stat-icon stat-icon-indigo mx-auto mb-3" style="width: 56px; height: 56px;">
+                        <i class="bi bi-person-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">Student Portal</h3>
+                    <p class="text-muted small">Sign in to register for semester courses &amp; view timetable</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="identifier" class="form-label fw-semibold small">Student ID or Registered Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="identifier" name="identifier" 
+                                   placeholder="e.g. BWU/BTA/23/576 or student@example.com" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="password" class="form-label fw-semibold small mb-0">Password</label>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Enter your account password" required>
+                        </div>
+                        <!-- Password suggestions helper -->
+                        <div class="password-suggestions mt-2 p-2 rounded bg-light border small text-muted">
+                            <div class="fw-semibold text-dark mb-1" style="font-size: 0.76rem;">
+                                <i class="bi bi-shield-check text-primary me-1"></i>Password Security Suggestions:
+                            </div>
+                            <ul class="mb-0 ps-3" style="font-size: 0.72rem; line-height: 1.45;">
+                                <li>Minimum 8 characters</li>
+                                <li>At least 1 uppercase (A-Z) and 1 lowercase (a-z)</li>
+                                <li>At least 1 digit (0-9) and 1 special symbol (@, #, $, !)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Local Storage Persistence Option -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <label class="form-check-label small text-muted" for="rememberMe">
+                            Remember Student ID on this device (<span class="text-primary fw-medium">Local Storage</span>)
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        Sign In to Student Portal <i class="bi bi-box-arrow-in-right ms-1"></i>
+                    </button>
+
+                    <!-- Quick Autofill for Convenience -->
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-light border text-muted w-100 py-2 small" onclick="autofillStudent()">
+                            <i class="bi bi-key text-primary me-1"></i> Autofill Arvind (BWU/BTA/23/576)
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <span class="text-muted small">Academic Administrator?</span>
+                    <a href="{{ url_for('admin_login') }}" class="text-decoration-none fw-semibold small ms-1">
+                        Go to Admin Portal <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// LocalStorage Persistence for Student Login
+document.addEventListener('DOMContentLoaded', function() {
+    const savedId = localStorage.getItem('campusenroll_saved_student_id');
+    const identifierInput = document.getElementById('identifier');
+    const rememberMe = document.getElementById('rememberMe');
+    
+    if (savedId && identifierInput) {
+        identifierInput.value = savedId;
+        if (rememberMe) rememberMe.checked = true;
+    }
+    
+    const form = identifierInput ? identifierInput.closest('form') : null;
+    if (form) {
+        form.addEventListener('submit', function() {
+            if (rememberMe && rememberMe.checked) {
+                localStorage.setItem('campusenroll_saved_student_id', identifierInput.value.trim());
+            } else {
+                localStorage.removeItem('campusenroll_saved_student_id');
+            }
+        });
+    }
+});
+
+function autofillStudent() {
+    document.getElementById('identifier').value = 'BWU/BTA/23/576';
+    document.getElementById('password').value = 'student123';
+}
+</script>
+{% endblock %}

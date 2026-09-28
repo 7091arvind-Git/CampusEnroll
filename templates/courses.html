@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Courses – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 mb-md-4 pb-2 border-bottom">
+    <div class="mb-2 mb-md-0">
+        <h2 class="fw-bold text-dark mb-1 fs-3 fs-md-2">Course Catalog</h2>
+        <p class="text-muted mb-0 small">
+            Browse available semester courses, filter by department, and register with one tap.
+        </p>
+    </div>
+    <div>
+        <span class="badge bg-white text-dark border p-2 shadow-sm d-inline-flex align-items-center">
+            <i class="bi bi-award-fill text-primary me-1"></i>
+            <span>Your Credits: <strong>{{ current_credits }} / {{ MAX_CREDIT_LIMIT }}</strong></span>
+            {% set remaining = MAX_CREDIT_LIMIT - current_credits %}
+            <span class="text-muted ms-1 small">({{ remaining }} left)</span>
+        </span>
+    </div>
+</div>
+
+<!-- Search & Multi-Filter Card -->
+<div class="app-card p-3 p-md-4 mb-4">
+    <form method="GET" action="{{ url_for('browse_courses') }}" class="row g-2 g-md-3">
+        <!-- Search bar -->
+        <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Search Course</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control" name="search" id="clientCourseSearch"
+                       placeholder="Search by code or title..." value="{{ search_query }}">
+            </div>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <label class="form-label small fw-semibold text-muted mb-1">Department</label>
+            <select class="form-select" name="department" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                    <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Semester Filter -->
+        <div class="col-6 col-sm-3 col-md-2">
+            <label class="form-label small fw-semibold text-muted mb-1">Semester</label>
+            <select class="form-select" name="semester" onchange="this.form.submit()">
+                <option value="">All Sem</option>
+                <option value="1" {% if selected_sem == '1' %}selected{% endif %}>Sem 1</option>
+                <option value="2" {% if selected_sem == '2' %}selected{% endif %}>Sem 2</option>
+                <option value="3" {% if selected_sem == '3' %}selected{% endif %}>Sem 3</option>
+                <option value="4" {% if selected_sem == '4' %}selected{% endif %}>Sem 4</option>
+                <option value="5" {% if selected_sem == '5' %}selected{% endif %}>Sem 5</option>
+                <option value="6" {% if selected_sem == '6' %}selected{% endif %}>Sem 6</option>
+            </select>
+        </div>
+
+        <!-- Credits Filter -->
+        <div class="col-6 col-sm-3 col-md-2">
+            <label class="form-label small fw-semibold text-muted mb-1">Credits</label>
+            <select class="form-select" name="credits" onchange="this.form.submit()">
+                <option value="">All Cr</option>
+                <option value="3" {% if selected_credits == '3' %}selected{% endif %}>3 Credits</option>
+                <option value="4" {% if selected_credits == '4' %}selected{% endif %}>4 Credits</option>
+            </select>
+        </div>
+
+        <!-- Reset & Submit Button -->
+        <div class="col-12 col-md-1 d-flex align-items-end">
+            <a href="{{ url_for('browse_courses') }}" class="btn btn-outline-secondary w-100" title="Reset Filters">
+                <i class="bi bi-arrow-counterclockwise me-1 d-md-none"></i>
+                <span class="d-md-none">Reset Filters</span>
+                <i class="bi bi-arrow-counterclockwise d-none d-md-inline"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Wishlist / LocalStorage View Toggle -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="small text-muted">
+        Found <strong>{{ courses|length }}</strong> semester offerings
+    </div>
+    <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-secondary active" id="filterAllBtn" onclick="filterWishlist(false)">
+            All Offerings
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="filterWishlistBtn" onclick="filterWishlist(true)">
+            <i class="bi bi-star-fill text-warning me-1"></i> Saved (<span id="savedCount">0</span>)
+        </button>
+    </div>
+</div>
+
+<!-- Courses Grid -->
+<div class="row g-3 g-md-4" id="coursesContainer">
+    {% for course in courses %}
+        <div class="col-12 col-md-6 col-lg-4 course-item" data-course-id="{{ course.id }}">
+            <div class="app-card course-card app-card-hover h-100">
+                <div class="course-card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary-subtle text-primary fw-bold fs-6">{{ course.course_code }}</span>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-muted bookmark-btn" 
+                                    data-course-id="{{ course.id }}" 
+                                    title="Save to Wishlist (Local Storage)" 
+                                    onclick="toggleBookmark({{ course.id }}, this)">
+                                <i class="bi bi-star"></i>
+                            </button>
+                        </div>
+                        <span class="badge badge-custom badge-credits">{{ course.credits }} Credits</span>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-2 fs-6 fs-md-5">{{ course.course_name }}</h5>
+
+                    <div class="mb-3 d-flex flex-wrap gap-1">
+                        <span class="badge badge-custom badge-dept">{{ course.department }}</span>
+                        <span class="badge badge-custom badge-sem">Sem {{ course.semester }}</span>
+                    </div>
+
+                    <div class="small text-muted mb-2">
+                        <i class="bi bi-person-workspace text-primary me-2"></i>
+                        <span><strong>Faculty:</strong> {{ course.faculty }}</span>
+                    </div>
+
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-clock-history text-primary me-2"></i>
+                        <span><strong>Schedule:</strong> {{ course.schedule }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="small text-muted">Seats:</span>
+                        {% if course.available_seats > 0 %}
+                            <span class="badge badge-custom badge-available">
+                                <i class="bi bi-check-circle me-1"></i>{{ course.available_seats }} / {{ course.max_seats }} Open
+                            </span>
+                        {% else %}
+                            <span class="badge badge-custom badge-full">
+                                <i class="bi bi-x-circle me-1"></i>0 / {{ course.max_seats }} Full
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="course-card-footer">
+                    {% if course.id in registered_course_ids %}
+                        <button class="btn btn-success w-100 py-2" disabled>
+                            <i class="bi bi-check2-circle me-1"></i> Enrolled
+                        </button>
+                    {% elif course.available_seats <= 0 %}
+                        <button class="btn btn-secondary w-100 py-2" disabled>
+                            <i class="bi bi-lock-fill me-1"></i> Course Full
+                        </button>
+                    {% elif current_credits + course.credits > MAX_CREDIT_LIMIT %}
+                        <button class="btn btn-outline-danger w-100 py-2" disabled title="Would exceed 24 credit limit">
+                            <i class="bi bi-exclamation-octagon me-1"></i> Credit Limit Reached
+                        </button>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('register_course', course_id=course.id) }}">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                                <i class="bi bi-plus-circle me-1"></i> Register Course
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-search display-3"></i>
+            </div>
+            <h4 class="fw-bold text-dark">No Courses Found</h4>
+            <p class="text-muted small">No courses match your current search or filter criteria.</p>
+            <a href="{{ url_for('browse_courses') }}" class="btn btn-primary btn-sm px-4">Clear All Filters</a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Dynamic Search No Results Fallback -->
+<div id="noResultsMessage" class="text-center py-5" style="display: none;">
+    <div class="mb-3 text-muted">
+        <i class="bi bi-search display-3"></i>
+    </div>
+    <h4 class="fw-bold text-dark">No Matching Courses</h4>
+    <p class="text-muted small">Try adjusting your keyword search query above.</p>
+</div>
+{% endblock %}

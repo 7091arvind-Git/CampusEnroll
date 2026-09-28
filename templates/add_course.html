@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New Course – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Add New Academic Course</h2>
+        <p class="text-muted mb-0">Define course attributes, credit weight, schedule, and seating capacity.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Catalog
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="app-card shadow-sm">
+            <div class="card-header-clean">
+                <span class="fw-bold"><i class="bi bi-plus-circle text-primary me-2"></i>New Course Specifications</span>
+            </div>
+
+            <div class="p-4">
+                <form method="POST" action="{{ url_for('add_course') }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="course_code" class="form-label small fw-semibold">Course Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="course_code" name="course_code" 
+                                   placeholder="e.g. CS401" required autofocus>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="course_name" class="form-label small fw-semibold">Course Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="course_name" name="course_name" 
+                                   placeholder="e.g. Cloud Security & Compliance" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="department" class="form-label small fw-semibold">Department <span class="text-danger">*</span></label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                                <option value="AI & Machine Learning">AI & Machine Learning</option>
+                                <option value="Information Technology">Information Technology</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="semester" class="form-label small fw-semibold">Semester <span class="text-danger">*</span></label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3" selected>Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6">Semester 6</option>
+                                <option value="7">Semester 7</option>
+                                <option value="8">Semester 8</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="credits" class="form-label small fw-semibold">Credits <span class="text-danger">*</span></label>
+                            <select class="form-select" id="credits" name="credits" required>
+                                <option value="1">1 Credit</option>
+                                <option value="2">2 Credits</option>
+                                <option value="3">3 Credits</option>
+                                <option value="4" selected>4 Credits</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-7">
+                            <label for="faculty" class="form-label small fw-semibold">Assigned Faculty / Instructor <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="faculty" name="faculty" 
+                                   placeholder="e.g. Dr. Rajesh Raman" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="max_seats" class="form-label small fw-semibold">Total Seat Capacity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="max_seats" name="max_seats" 
+                                   value="40" min="1" max="200" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="schedule" class="form-label small fw-semibold">Class Schedule &amp; Timings <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="schedule" name="schedule" 
+                               placeholder="e.g. Mon, Wed, Fri 10:00 - 11:00 AM" required>
+                        <div class="form-text">Specify days (e.g. Mon, Tue, Wed, Thu, Fri) and time slot for automated timetable integration.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i> Save &amp; Publish Course
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

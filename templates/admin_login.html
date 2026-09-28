@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrator Portal Login – CampusEnroll{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2 py-md-4">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+        <div class="app-card shadow-sm border">
+            <div class="p-3 p-sm-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="stat-icon stat-icon-purple mx-auto mb-3" style="width: 56px; height: 56px;">
+                        <i class="bi bi-shield-lock-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">Administrator Portal</h3>
+                    <p class="text-muted small">Course Catalog Management &amp; Enrollment Administration</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('admin_login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold small">Administrator Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill-gear"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="e.g. admin" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold small">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Enter admin password" required>
+                        </div>
+                        <!-- Password suggestions helper -->
+                        <div class="password-suggestions mt-2 p-2 rounded bg-light border small text-muted">
+                            <div class="fw-semibold text-dark mb-1" style="font-size: 0.76rem;">
+                                <i class="bi bi-shield-check text-primary me-1"></i>Administrator Password Policy:
+                            </div>
+                            <ul class="mb-0 ps-3" style="font-size: 0.72rem; line-height: 1.45;">
+                                <li>Minimum 8 characters</li>
+                                <li>Alphanumeric with mixed case (A-Z, a-z, 0-9)</li>
+                                <li>Include at least 1 symbol (@, #, $, !)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
+                        Sign In as Administrator <i class="bi bi-shield-check ms-1"></i>
+                    </button>
+
+                    <!-- Quick Autofill for Convenience -->
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-light border text-muted w-100 py-2 small" onclick="autofillAdmin()">
+                            <i class="bi bi-key text-dark me-1"></i> Autofill Sample Admin Account
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <span class="text-muted small">Looking for Student Registration?</span>
+                    <a href="{{ url_for('login') }}" class="text-decoration-none fw-semibold small ms-1">
+                        Go to Student Portal <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function autofillAdmin() {
+    document.getElementById('username').value = 'admin';
+    document.getElementById('password').value = 'admin123';
+}
+</script>
+{% endblock %}

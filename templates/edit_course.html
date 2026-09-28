@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Course – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Edit Course: {{ course.course_code }}</h2>
+        <p class="text-muted mb-0">Update course details, instructor, capacity, or class schedule.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Catalog
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="app-card shadow-sm">
+            <div class="card-header-clean">
+                <span class="fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Modify Course Details</span>
+                <span class="badge bg-primary-subtle text-primary">{{ registered_count }} Currently Enrolled</span>
+            </div>
+
+            <div class="p-4">
+                <form method="POST" action="{{ url_for('edit_course', course_id=course.id) }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Course Code</label>
+                            <input type="text" class="form-control bg-light" value="{{ course.course_code }}" disabled>
+                            <div class="form-text">Course code is a unique immutable key.</div>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="course_name" class="form-label small fw-semibold">Course Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="course_name" name="course_name" 
+                                   value="{{ course.course_name }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="department" class="form-label small fw-semibold">Department <span class="text-danger">*</span></label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="Computer Science & Engineering" {% if course.department == 'Computer Science & Engineering' %}selected{% endif %}>Computer Science & Engineering</option>
+                                <option value="AI & Machine Learning" {% if course.department == 'AI & Machine Learning' %}selected{% endif %}>AI & Machine Learning</option>
+                                <option value="Information Technology" {% if course.department == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="semester" class="form-label small fw-semibold">Semester <span class="text-danger">*</span></label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                {% for s in range(1, 9) %}
+                                    <option value="{{ s }}" {% if course.semester == s %}selected{% endif %}>Semester {{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="credits" class="form-label small fw-semibold">Credits <span class="text-danger">*</span></label>
+                            <select class="form-select" id="credits" name="credits" required>
+                                {% for c in range(1, 7) %}
+                                    <option value="{{ c }}" {% if course.credits == c %}selected{% endif %}>{{ c }} Credit{% if c > 1 %}s{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-7">
+                            <label for="faculty" class="form-label small fw-semibold">Assigned Faculty / Instructor <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="faculty" name="faculty" 
+                                   value="{{ course.faculty }}" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="max_seats" class="form-label small fw-semibold">Total Seat Capacity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="max_seats" name="max_seats" 
+                                   value="{{ course.max_seats }}" min="{{ registered_count }}" max="200" required>
+                            <div class="form-text">Cannot be less than enrolled count ({{ registered_count }}).</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="schedule" class="form-label small fw-semibold">Class Schedule &amp; Timings <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="schedule" name="schedule" 
+                               value="{{ course.schedule }}" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            <i class="bi bi-save me-1"></i> Update Course
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

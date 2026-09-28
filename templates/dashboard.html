@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Welcome Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+    <div class="mb-3 mb-md-0">
+        <h2 class="fw-bold text-dark mb-1 fs-3 fs-md-2">Welcome back, {{ student.name }}!</h2>
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            <span class="badge badge-custom badge-dept">{{ student.department }}</span>
+            <span class="badge badge-custom badge-sem">Semester {{ student.semester }}</span>
+            <span class="badge bg-secondary-subtle text-secondary">{{ student.student_id }}</span>
+        </div>
+    </div>
+    <div class="d-flex flex-column flex-sm-row gap-2">
+        <a href="{{ url_for('browse_courses') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-search me-1"></i> Browse &amp; Register
+        </a>
+        <a href="{{ url_for('timetable') }}" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-calendar3 me-1"></i> Class Timetable
+        </a>
+    </div>
+</div>
+
+<!-- Metrics Cards (2x2 Grid on Mobile Phones, 1x4 on Desktop) -->
+<div class="row g-2 g-md-3 mb-4">
+    <!-- Total Registered Courses -->
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-indigo">
+                <i class="bi bi-book"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_courses_count }}</div>
+                <div class="stat-label">Enrolled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Registered Credits -->
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">
+                <i class="bi bi-award"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_credits }} <span class="fs-6 text-muted fw-normal">/ {{ MAX_CREDIT_LIMIT }}</span></div>
+                <div class="stat-label">Credits</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remaining Allowed Credits -->
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+                <i class="bi bi-plus-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ remaining_credits }}</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Max Limit Rule Indicator -->
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ MAX_CREDIT_LIMIT }}</div>
+                <div class="stat-label">Max Cap</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Usage Progress Bar Card -->
+<div class="app-card mb-4 p-3 p-md-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-semibold text-dark small fs-md-6">Semester Credit Utilization</span>
+        <span class="small fw-bold {% if total_credits >= 20 %}text-warning{% else %}text-primary{% endif %}">
+            {{ total_credits }} / {{ MAX_CREDIT_LIMIT }} Credits ({{ credit_percent }}%)
+        </span>
+    </div>
+    <div class="credit-progress-bar">
+        <div class="credit-progress-fill {% if credit_percent >= 85 %}warning{% endif %}" style="width: {{ credit_percent }}%;"></div>
+    </div>
+    <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 0.75rem;">
+        <span>0 Cr</span>
+        <span>12 Cr (Half)</span>
+        <span>{{ MAX_CREDIT_LIMIT }} Cr (Max Limit)</span>
+    </div>
+</div>
+
+<!-- Quick Action Shortcuts (2x2 on Mobile, 4 in row on Desktop) -->
+<div class="row g-2 g-md-3 mb-4">
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('browse_courses') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-indigo" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-grid"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">Course Catalog</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">Browse &amp; register</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('my_courses') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-green" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">My Courses</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">View &amp; drop courses</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('timetable') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-blue" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">Timetable</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">Class routine</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('profile') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-purple" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-person-lines-fill"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">My Profile</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">Account info</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Enrolled Courses Section -->
+<div class="app-card shadow-sm">
+    <div class="card-header-clean">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-list-check text-primary"></i>
+            <span>Current Course Registrations</span>
+        </div>
+        {% if registered_courses %}
+            <a href="{{ url_for('my_courses') }}" class="btn btn-sm btn-outline-primary">Manage Registrations</a>
+        {% endif %}
+    </div>
+
+    {% if registered_courses %}
+        <!-- Desktop Table View (>= 768px) -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-custom table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Course Name</th>
+                        <th>Department</th>
+                        <th>Credits</th>
+                        <th>Faculty</th>
+                        <th>Class Schedule</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in registered_courses %}
+                        <tr>
+                            <td><span class="fw-bold text-primary">{{ course.course_code }}</span></td>
+                            <td class="fw-medium">{{ course.course_name }}</td>
+                            <td><span class="badge badge-custom badge-dept">{{ course.department }}</span></td>
+                            <td><span class="badge badge-custom badge-credits">{{ course.credits }} Credits</span></td>
+                            <td><i class="bi bi-person text-muted me-1"></i>{{ course.faculty }}</td>
+                            <td class="small text-muted"><i class="bi bi-clock me-1"></i>{{ course.schedule }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('drop_course', course_id=course.id) }}" onsubmit="return confirmDropCourse('{{ course.course_code }}');" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Drop Course">
+                                        <i class="bi bi-trash3 me-1"></i>Drop
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View (< 768px for all phones) -->
+        <div class="d-md-none p-2">
+            {% for course in registered_courses %}
+                <div class="app-card p-3 mb-2 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary-subtle text-primary fw-bold fs-6">{{ course.course_code }}</span>
+                        <span class="badge badge-custom badge-credits">{{ course.credits }} Credits</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">{{ course.course_name }}</h6>
+                    <div class="mb-2">
+                        <span class="badge badge-custom badge-dept">{{ course.department }}</span>
+                    </div>
+                    <div class="small text-muted mb-1">
+                        <i class="bi bi-person text-secondary me-1"></i>{{ course.faculty }}
+                    </div>
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-clock text-primary me-1"></i>{{ course.schedule }}
+                    </div>
+                    <form method="POST" action="{{ url_for('drop_course', course_id=course.id) }}" onsubmit="return confirmDropCourse('{{ course.course_code }}');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-2 fw-semibold">
+                            <i class="bi bi-trash3 me-1"></i> Drop Course
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="p-4 p-md-5 text-center">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-journal-x display-4"></i>
+            </div>
+            <h5 class="fw-bold text-dark">No Courses Registered Yet</h5>
+            <p class="text-muted small mb-3">You have not registered for any courses for this semester yet.</p>
+            <a href="{{ url_for('browse_courses') }}" class="btn btn-primary btn-sm px-4 py-2">
+                <i class="bi bi-plus-lg me-1"></i> Browse &amp; Register Courses
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

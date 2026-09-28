@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}CampusEnroll – University Course Registration Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-gradient mb-4 mb-md-5">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-white text-primary mb-3 px-3 py-2 rounded-pill fw-semibold shadow-sm">
+                <i class="bi bi-mortarboard-fill me-1"></i> University Academic Portal &bull; Fall Semester 2026
+            </span>
+            <h1 class="hero-title fw-bold mb-3 text-white">Student Course Registration System</h1>
+            <p class="hero-lead text-light opacity-90 mb-4 pe-lg-4">
+                Welcome to CampusEnroll, the centralized university portal for undergraduate and postgraduate course selection, schedule planning, and credit management.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 hero-actions">
+                {% if current_user.is_logged_in %}
+                    {% if current_user.role == 'student' %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary shadow-sm">
+                            <i class="bi bi-speedometer2 me-2"></i>Go to Student Dashboard
+                        </a>
+                        <a href="{{ url_for('browse_courses') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="bi bi-search me-2"></i>Browse Course Catalog
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary shadow-sm">
+                            <i class="bi bi-speedometer2 me-2"></i>Go to Admin Dashboard
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary shadow-sm">
+                        <i class="bi bi-person-fill me-2"></i>Student Portal Login
+                    </a>
+                    <a href="{{ url_for('admin_login') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Administrative Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-4 d-none d-lg-block text-center">
+            <div class="p-4 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow">
+                <i class="bi bi-calendar2-week display-1 text-light"></i>
+                <h5 class="text-white mt-3 mb-1">Registration Open</h5>
+                <p class="text-light small opacity-75 mb-0">Max Credit Limit: {{ MAX_CREDIT_LIMIT }} Credits</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Statistics Overview -->
+<div class="row g-3 g-md-4 mb-4 mb-md-5">
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-indigo">
+                <i class="bi bi-book-half"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_courses }}</div>
+                <div class="stat-label">Active Courses</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_students }}</div>
+                <div class="stat-label">Enrolled Students</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_registrations }}</div>
+                <div class="stat-label">Total Registrations</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Portals / Roles Section -->
+<div class="row g-4 mb-4 mb-md-5">
+    <div class="col-md-6">
+        <div class="app-card h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon stat-icon-indigo me-3">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Student Portal</h4>
+                        <span class="text-muted small">Undergraduate &amp; Postgraduate Students</span>
+                    </div>
+                </div>
+                <p class="text-muted small mb-3">
+                    Access course offerings across Computer Science, AI &amp; Machine Learning, and Information Technology. Register for semester courses, enforce credit balances, and generate your weekly timetable.
+                </p>
+                <ul class="list-unstyled text-secondary small mb-4">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Multi-filter course search by department, semester &amp; credits</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Real-time 24-credit maximum semester ceiling enforcement</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Automated weekly timetable generation (Monday through Friday)</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Course dropping with instantaneous seat restoration</li>
+                </ul>
+            </div>
+            <a href="{{ url_for('login') }}" class="btn btn-primary w-100 py-2 fw-semibold">
+                Access Student Portal <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="app-card h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon stat-icon-purple me-3">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Administrative Portal</h4>
+                        <span class="text-muted small">Academic Coordinators &amp; Registrars</span>
+                    </div>
+                </div>
+                <p class="text-muted small mb-3">
+                    Manage institutional course curriculum, schedule lecture slots, configure classroom seating quotas, monitor student credit distribution, and audit active registration logs.
+                </p>
+                <ul class="list-unstyled text-secondary small mb-4">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Full curriculum management (Add, Edit, and Delete courses)</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Live seating capacity and enrollment monitoring</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Student credit tracking directory</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Real-time audit log of all registration transactions</li>
+                </ul>
+            </div>
+            <a href="{{ url_for('admin_login') }}" class="btn btn-outline-dark w-100 py-2 fw-semibold">
+                Access Administrator Portal <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Academic Registration Guidelines Section -->
+<div class="app-card p-4 mb-4">
+    <div class="row align-items-center">
+        <div class="col-lg-8 mb-3 mb-lg-0">
+            <h5 class="fw-bold text-dark mb-2">
+                <i class="bi bi-info-circle-fill text-primary me-2"></i>Semester Academic Registration Guidelines
+            </h5>
+            <div class="text-muted small">
+                <p class="mb-2">Please review the academic enrollment policies before finalizing your course registrations:</p>
+                <ul class="mb-0 ps-3">
+                    <li class="mb-1"><strong>Credit Ceiling:</strong> Students may register for a maximum of <strong>{{ MAX_CREDIT_LIMIT }} credits</strong> for the current semester.</li>
+                    <li class="mb-1"><strong>Seat Availability:</strong> Course enrollment is confirmed in real time. Once classroom capacity reaches zero, no additional registrations can be placed.</li>
+                    <li><strong>Drop Window:</strong> Students can drop enrolled courses before the semester deadline, immediately releasing their seat to other students.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary px-4">
+                <i class="bi bi-person-check me-1"></i> Student Sign In
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- How Course Registration Works (Process Steps) -->
+<div class="mb-4">
+    <h5 class="fw-bold text-dark mb-3 text-center">Registration Process Workflow</h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="app-card p-3 h-100 text-center">
+                <div class="stat-icon stat-icon-indigo mx-auto mb-2" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                    1
+                </div>
+                <h6 class="fw-bold mb-1">Authenticate</h6>
+                <p class="text-muted small mb-0">Sign in with your Student ID or university email to view your current academic status and credit ceiling.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="app-card p-3 h-100 text-center">
+                <div class="stat-icon stat-icon-blue mx-auto mb-2" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                    2
+                </div>
+                <h6 class="fw-bold mb-1">Select Courses</h6>
+                <p class="text-muted small mb-0">Filter by department or semester, review instructors and remaining seats, and add courses within your credit limit.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="app-card p-3 h-100 text-center">
+                <div class="stat-icon stat-icon-green mx-auto mb-2" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                    3
+                </div>
+                <h6 class="fw-bold mb-1">View Schedule</h6>
+                <p class="text-muted small mb-0">Check your personalized weekly timetable, automatically organized from Monday through Friday.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

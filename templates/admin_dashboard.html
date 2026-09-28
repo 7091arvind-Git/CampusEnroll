@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard – CampusEnroll{% endblock %}
+
+{% block content %}
+<!-- Admin Dashboard Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 mb-md-4 pb-2 border-bottom">
+    <div class="mb-2 mb-md-0">
+        <h2 class="fw-bold text-dark mb-1 fs-3 fs-md-2">Administrative Overview</h2>
+        <p class="text-muted mb-0 small">System performance metrics, enrollment volume, and course statistics.</p>
+    </div>
+    <div class="d-flex flex-column flex-sm-row gap-2">
+        <a href="{{ url_for('add_course') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add New Course
+        </a>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-gear me-1"></i> Manage Catalog
+        </a>
+    </div>
+</div>
+
+<!-- Metrics Cards (2x2 Grid on Mobile Phones, 1x4 on Desktop) -->
+<div class="row g-2 g-md-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_students }}</div>
+                <div class="stat-label">Students</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-indigo">
+                <i class="bi bi-book-half"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_courses }}</div>
+                <div class="stat-label">Courses</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+                <i class="bi bi-check2-square"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_registrations }}</div>
+                <div class="stat-label">Enrollments</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">
+                <i class="bi bi-pie-chart-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_available_seats }}</div>
+                <div class="stat-label">Seats Left</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Navigation Cards (2x2 on Mobile Phones) -->
+<div class="row g-2 g-md-3 mb-4">
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('manage_courses') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-indigo" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-collection"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">Course Inventory</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">Edit &amp; delete</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('add_course') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-green" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-plus-square"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">Add Course</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">New offerings</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('view_students') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-blue" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-person-lines-fill"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">Directory</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">Credit records</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('view_registrations') }}" class="app-card p-3 d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-2 gap-sm-3 text-decoration-none text-dark app-card-hover h-100">
+            <div class="stat-icon stat-icon-purple" style="width: 42px; height: 42px; min-width: 42px; font-size: 1.15rem;">
+                <i class="bi bi-card-checklist"></i>
+            </div>
+            <div>
+                <div class="fw-bold small">Audit Logs</div>
+                <div class="text-muted d-none d-sm-block" style="font-size: 0.75rem;">Enrollment history</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+
+<div class="row g-4">
+    <!-- Popular Courses Table -->
+    <div class="col-lg-7">
+        <div class="app-card h-100 shadow-sm">
+            <div class="card-header-clean">
+                <span class="fw-bold"><i class="bi bi-fire text-danger me-2"></i>Most Popular Courses</span>
+                <a href="{{ url_for('manage_courses') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course Title</th>
+                            <th>Department</th>
+                            <th>Enrolled</th>
+                            <th>Capacity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in popular_courses %}
+                            <tr>
+                                <td><span class="fw-bold text-primary">{{ course.course_code }}</span></td>
+                                <td class="fw-medium">{{ course.course_name }}</td>
+                                <td><span class="badge badge-custom badge-dept">{{ course.department }}</span></td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1">
+                                        {{ course.reg_count }} Students
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="small text-muted">{{ course.available_seats }} / {{ course.max_seats }} left</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Registrations Feed -->
+    <div class="col-lg-5">
+        <div class="app-card h-100 shadow-sm">
+            <div class="card-header-clean">
+                <span class="fw-bold"><i class="bi bi-clock-history text-primary me-2"></i>Recent Enrollments</span>
+                <a href="{{ url_for('view_registrations') }}" class="btn btn-sm btn-outline-secondary">Audit All</a>
+            </div>
+            <div class="p-3">
+                {% if recent_registrations %}
+                    <ul class="list-unstyled mb-0">
+                        {% for reg in recent_registrations %}
+                            <li class="p-2 mb-2 rounded bg-light border-bottom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold text-dark small">{{ reg.student_name }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        Enrolled in <strong class="text-primary">{{ reg.course_code }}</strong>
+                                    </div>
+                                </div>
+                                <div class="text-end text-muted" style="font-size: 0.72rem;">
+                                    <div>{{ reg.student_id }}</div>
+                                    <div class="opacity-75">{{ reg.registration_date }}</div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-center text-muted py-4 small">No registrations recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
